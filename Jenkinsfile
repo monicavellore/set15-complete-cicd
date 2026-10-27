@@ -30,24 +30,6 @@ pipeline {
             }
         }
 
-        stage('Push Docker Image') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-cred',
-                    usernameVariable: 'DOCKERHUB_USER',
-                    passwordVariable: 'DOCKERHUB_TOKEN'
-                )]) {
-                    powershell '''
-                        $env:DOCKERHUB_TOKEN | & $env:DOCKER login -u $env:DOCKERHUB_USER --password-stdin
-                        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-                        & $env:DOCKER push $env:IMAGE
-                        exit $LASTEXITCODE
-                    '''
-                }
-            }
-        }
-
         stage('Deploy to Kubernetes') {
             steps {
                 bat '"%KUBECTL%" --kubeconfig="%KUBECONFIG%" apply -f "%WORKSPACE%\\k8s\\deployment.yaml"'
